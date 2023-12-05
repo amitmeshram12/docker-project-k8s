@@ -11,6 +11,7 @@ pipeline {
         IMAGE_PREFIX = 'amitmeshram'
         COMPOSE_FILE = 'docker-compose.yml'
         TRIVY_REPORT = 'trivy-report.json'
+        DOCKER_CLIENT = 'docker_client'
      }
     stages {
            stage('Cleanup Workspace') {
@@ -108,18 +109,17 @@ pipeline {
             steps {
                 script {
                     // Copy Docker Compose files to remote server
-                    sh "scp  docker-compose.yml docker@192.168.245.193:/var/lib/jenkins/workspace/Docker-Compose_project"
-                    }
+                    sh "scp -i $DOCKER_CLIENT /var/lib/jenkins/workspace/Docker-Compose_project/docker-compose.yml docker@192.168.245.193:/home/docker/vprofile"
+
                     // SSH into the remote server and run Docker Compose
-                    sh "ssh docker@192.168.245.193  'cd /path/on/remote/server/ && docker-compose pull && docker-compose up -d'"
+                    sh "ssh -i $DOCKER_CLIENT docker@192.168.245.193  'cd /home/docker/vprofile && docker-compose pull && docker-compose up -d'"
                     }
                 }
             }    
            stage('clean Docker image') {
             steps {
                 sh 'docker rmi $(docker images -q)'
-                       }
-                    }
                 }
             }
         }
+    }    
